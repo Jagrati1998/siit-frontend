@@ -33,7 +33,7 @@ const FindCertificate = () => {
     };
     const serchUser=()=>{
      
-        axios.get(`http://localhost:3001/api/${regno}/${name}`).then(res=>{
+        axios.get(`${process.env.React_App_Backend_Ip}/api/${regno}/${name}`).then(res=>{
         
          setSerachedUser(res.data)
          if(res.data ===null)

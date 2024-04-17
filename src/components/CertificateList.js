@@ -36,7 +36,7 @@ const Table = ({ data }) => {
   };
   const handleSubmit = async(values) => {
     try {
-       await  axios.post('http://localhost:3001/api',values).then((res)=>{
+       await  axios.post(`${process.env.React_App_Backend_Ip}/api`,values).then((res)=>{
         setShowConfirmation(true);
         setIsOpen(!isOpen)
     }
@@ -51,7 +51,7 @@ const Table = ({ data }) => {
     // Handle form submission logic here
   };
   const getCertificate=()=>{
-    axios.get('http://localhost:3001/api').then((res)=>{
+    axios.get(`${process.env.React_App_Backend_Ip}/api`).then((res)=>{
     setCertificateList(res.data)
     
   }
