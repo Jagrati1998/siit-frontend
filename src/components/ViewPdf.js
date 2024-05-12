@@ -1,139 +1,152 @@
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import MainComponent from './MainComponent';
-import Modal from './Modal';
-import { PDFDownloadLink, PDFViewer } from '@react-pdf/renderer';
-import Pdf from "./PDF"
-import { useNavigate } from 'react-router-dom';
-import { ErrorMessage, Field, Form, Formik } from 'formik';
-const FindCertificate = () => {
-  const [fileName] = useState('example.pdf');
+import axios from "axios";
+import { ErrorMessage, Field, Form, Formik } from "formik";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import * as Yup from "yup";
+import ConfirmationBox from "./successbox";
+import FailureBox from "./FailureBox"
+const Table = ({ data }) => {
   const navigate = useNavigate();
-    const [regno,setRegNo]=useState(null)
-    const [name,setName]=useState(null)
-    const [serchedUser,setSerachedUser]=useState(null)
-    const [isSearched,setisSearched]=useState(false)
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isLoggedIn,setIsLoggedIn]=useState(false)
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [userFound,setUserFound]=useState(false)
-    const [userData,setUserData]=useState({
-      registrationNo:"",
-      studentName: "",
-      fatherName: "",
-      courseName: "",
-      duration: "",
-      completedDate: "",
-      issueDate: "",
-      centerName: "",
-      grade: "",
-    });
-   
-    const handleLogin = () => {
-      if( username==="admin" && password==="admin")
-      navigate('/new-path');
-      // Here you can perform login logic, for simplicity let's just log the username and password
-      setIsLoggedIn(true)
+  const [isOpen, setIsOpen] = useState(false);
+  const [certificateList,setCertificateList]=useState([])
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showFailBox, setShowFailBox] = useState(false);
+  const [error, setError] = useState(null);
+  const validationSchema = Yup.object().shape({
+    registrationNo: Yup.string().required("Registration No is required"),
+    studentName: Yup.string().required("Student Name is required"),
+    fatherName: Yup.string().required("Father Name is required"),
+    courseName: Yup.string().required("Course Name is required"),
+    duration: Yup.string().required("Duration is required"),
+    completedDate: Yup.date().required("Completed Date is required"),
+    issueDate: Yup.date().required("Issue Date is required"),
+    centerName: Yup.string().required("Center Name is required"),
+    grade: Yup.string().required("Grade is required"),
+  });
+  const initialValues = {
+    registrationNo: "",
+    studentName: "",
+    fatherName: "",
+    courseName: "",
+    duration: "",
+    completedDate: "",
+    issueDate: "",
+    centerName: "",
+    grade: "",
+  };
+  const handleSubmit = async(values) => {
+    try {
+       await  axios.post(`${process.env.React_App_Backend_Ip}/api`,values).then((res)=>{
+        setShowConfirmation(true);
+        setIsOpen(!isOpen)
+    }
+       )
      
-    };
-    const handleLoginClick = () => {
-      setIsModalOpen(true);
-    };
+    } catch (error) {
+      setShowFailBox(true)
+      setIsOpen(!isOpen)
+      setError(error);
+    }
+
+    // Handle form submission logic here
+  };
+  const getCertificate=()=>{
+    axios.get(`${process.env.React_App_Backend_Ip}/api`).then((res)=>{
+    setCertificateList(res.data)
+    
+  }
+    )
+  }
+  useEffect(() => {
+   const loginState=localStorage.getItem('isTkksksksin');
+  if( loginState!=="rt$U&u^5*jg"){
+    navigate("/");
+
+  }
+
+    getCertificate()
   
-    const handleCloseModal = () => {
-      setIsModalOpen(false);
-    };
-    const serchUser=()=>{
-     setUserFound(false)
-        axios.get(`${process.env.React_App_Backend_Ip}/api/${regno}/${name}`).then(res=>{
-        
-         setSerachedUser(res.data)
-         if(res.data ===null){
-         setUserFound(true)
-         setisSearched(false)}
-         if(res.data !==null) {
-         setUserData(res.data)
-         setisSearched(true)
-         }
-        
-        })
-      }
-      useEffect(() => {
-        const loginState=localStorage.getItem('isTkksksksin');
-        if( loginState==="rt$U&u^5*jg"){
-          navigate("/show-certificate");
-      
-        }
-      
-        return () => {
-          
-        }
-      }, [])
-      
+    return () => {
+     
+    }
+  }, [])
+  
   return (
     <>
-    <div className="bg-gray-800 text-white py-4">
-     
-      <div class="flex justify-between items-center">
-      <div className="container mx-auto px-4 flex justify-between items-center">
-        <h1 className="text-xl font-bold">SIIT Computer College</h1>
-        <nav className="flex space-x-4">
-          {/* Add your navigation links here */}
-        </nav>
+      <div className="bg-gray-800 text-white py-4">
+        <div class="flex justify-between items-center">
+          <div className="container mx-auto px-4 flex justify-between items-center">
+            <h1 className="text-xl font-bold">SIIT Computer College</h1>
+            <nav className="flex space-x-4">
+              {/* Add your navigation links here */}
+            </nav>
+          </div>
+          <button
+         
+            type="button"
+            onClick={() => setIsOpen(!isOpen)}
+            className="bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-5"
+          >
+           Add Certificate
+          </button>
+          {/* <button
+            onClick={()=>{navigate('/add-certificate')}}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-10"
+          >
+           Add Certificate
+          </button> */}
+
+          <button
+            onClick={() => {
+              localStorage.setItem('isTkksksksin', 'lllluuuyyyykkk');
+              navigate("/");
+            }}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-10"
+          >
+            Logout
+          </button>
+        </div>
+
+        <main className="container mx-auto px-4 py-16"></main>
       </div>
-     
-      <button onClick={handleLoginClick} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-10">
-        Login
-      </button>
- 
 
-</div>
-
-      <main className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold mb-4">Find Student</h2>
-        
-  
-
-
-        <div className=" justify-center mb-8">
-          <div>
-          <div className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-3 py-2 flex items-center">
-            <input
-              value={regno}
-              onChange={(e)=>setRegNo(e.target.value)} 
-              type="text"
-              className="w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg pl-2  text-black py-4"
-              placeholder="Enter your reg no "
-            />
-             
-           
-            
-          </div>
-          <div className="w-full max-w-md rounded-lg border border-gray-300 bg-white px-3 py-2 flex items-center mt-5">
-            <input
-              value={name}
-              onChange={(e)=>setName(e.target.value)} 
-              type="text"
-              className="w-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-lg pl-2  text-black py-4"
-              placeholder="Enter your  name"
-            />
-             
-            <button type="button" className="ml-3 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow" onClick={()=>{serchUser()}}>
-              Search
-            </button>
-            
-          </div>
-        </div>
-        </div>
-      </main>
-      <div class="fixed top-0 left-0 w-full h-full bg-gray-900 bg-opacity-50 flex justify-center items-center z-50 hidden" id="user-not-found-modal">
- 
-</div>
-    </div>
-    {isSearched && 
-      <>
-<div className="fixed z-10 inset-0 overflow-y-auto">
+      <div className="overflow-x-auto">
+        <table className="min-w-full table-auto">
+          <thead>
+            <tr className="bg-gray-200 text-gray-600 uppercase text-sm leading-normal">
+              <th className="py-3 px-6 text-left">Registration No</th>
+              <th className="py-3 px-6 text-left">Student Name</th>
+              <th className="py-3 px-6 text-left">Father Name</th>
+              <th className="py-3 px-6 text-left">Course Name</th>
+              <th className="py-3 px-6 text-left">Duration</th>
+              <th className="py-3 px-6 text-left">Completed Date</th>
+              <th className="py-3 px-6 text-left">Issue Date</th>
+              <th className="py-3 px-6 text-left">Center Name</th>
+              <th className="py-3 px-6 text-left">Grade</th>
+            </tr>
+          </thead>
+          <tbody className="text-gray-600 text-sm font-light">
+            {certificateList.map((item, index) => (
+              <tr
+                key={index}
+                className="border-b border-gray-200 hover:bg-gray-100"
+              >
+                <td className="py-3 px-6 text-left">{item.registrationNo}</td>
+                <td className="py-3 px-6 text-left">{item.studentName}</td>
+                <td className="py-3 px-6 text-left">{item.fatherName}</td>
+                <td className="py-3 px-6 text-left">{item.courseName}</td>
+                <td className="py-3 px-6 text-left">{item.duration}</td>
+                <td className="py-3 px-6 text-left">{item.completedDate}</td>
+                <td className="py-3 px-6 text-left">{item.issueDate}</td>
+                <td className="py-3 px-6 text-left">{item.centerName}</td>
+                <td className="py-3 px-6 text-left">{item.grade}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {isOpen && (
+        <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex justify-center min-h-screen  pt-4 pb-20 text-center sm:block sm:p-0">
             <div
               className="fixed inset-0 transition-opacity"
@@ -160,7 +173,7 @@ const FindCertificate = () => {
                   
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                     <svg
-                 onClick={() => setisSearched(!isSearched)}
+                    onClick={() => setIsOpen(!isOpen)}
                       className="h-6 w-6 text-blue-600"
                       xmlns="http://www.w3.org/2000/svg"
                       fill="none"
@@ -177,13 +190,13 @@ const FindCertificate = () => {
                   </div>
                   <div className="mt-3 text-center sm:mt-0  sm:text-left w-full  ">
                     <h3 className="text-lg leading-6 font-medium text-gray-600 bg-slate-100 p-5 mt-5">
-                      Student Info
+                      Add a Certificate
                     </h3>
                     <div className="mt-2"></div>
                     <Formik
-                      initialValues={userData}
-                      // validationSchema={validationSchema}
-                      // onSubmit={handleSubmit}
+                      initialValues={initialValues}
+                      validationSchema={validationSchema}
+                      onSubmit={handleSubmit}
                     >
                       <Form>
                         <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mt-5 ">
@@ -197,7 +210,6 @@ const FindCertificate = () => {
                             <Field
                               type="text"
                               id="registrationNo"
-                              disabled
                               name="registrationNo"
                               placeholder="Enter registration no"
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -221,7 +233,6 @@ const FindCertificate = () => {
                               type="text"
                               id="studentName"
                               name="studentName"
-                              disabled
                               placeholder="Enter student name"
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             />
@@ -241,7 +252,6 @@ const FindCertificate = () => {
                             <Field
                               type="text"
                               id="fatherName"
-                              disabled
                               placeholder="Enter father name"
                               name="fatherName"
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -264,7 +274,6 @@ const FindCertificate = () => {
                             type="text"
                             id="courseName"
                             name="courseName"
-                            disabled
                             placeholder="Enter course name"
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                           />
@@ -285,7 +294,6 @@ const FindCertificate = () => {
                             type="text"
                             id="duration"
                             name="duration"
-                            disabled
                             placeholder="Enter duration in days"
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                           />
@@ -307,7 +315,6 @@ const FindCertificate = () => {
                               type="date"
                               id="completedDate"
                               name="completedDate"
-                              disabled
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             />
                             <ErrorMessage
@@ -326,7 +333,6 @@ const FindCertificate = () => {
                             <Field
                               type="date"
                               id="issueDate"
-                              disabled
                               name="issueDate"
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                             />
@@ -349,7 +355,6 @@ const FindCertificate = () => {
                             id="centerName"
                             name="centerName"
                             placeholder="Enter center name"
-                            disabled
                             className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                           />
                           <ErrorMessage
@@ -369,7 +374,6 @@ const FindCertificate = () => {
                             component="select"
                             id="grade"
                             name="grade"
-                            disabled
                             className="shadow appearance-none border rounded w-full bg-white py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                           >
                             <option value="">Select Grade</option>
@@ -387,8 +391,10 @@ const FindCertificate = () => {
                           />
                         </div>
                         <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-               
-                <button onClick={() => setisSearched(!isSearched)}type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                <button  type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                  Add Certificate
+                </button>
+                <button onClick={() => setIsOpen(!isOpen)}type="button" className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                   Cancel
                 </button>
                 
@@ -401,49 +407,27 @@ const FindCertificate = () => {
             </div>
           </div>
         </div>
-   
-        
-    {/* <PDFViewer width="100%" height="400px" showToolbar={false}>
-    <Pdf
-    serchedUser={serchedUser}
-    />
-  </PDFViewer> */}
-
-    
+      )}
+        {showConfirmation && (
+        <ConfirmationBox
+          message="Certificate is added successfully"
+          duration={2000}
+          showConfirmation={showConfirmation}
+          setShowConfirmation={setShowConfirmation}
+          onClose={()=>{}}
+        />
+      )}
+       {showFailBox && (
+        <FailureBox
+          message="Something went wrong"
+          duration={2000}
+          showConfirmation={showFailBox}
+          setShowConfirmation={setShowFailBox}
+          onClose={()=>{}}
+        />
+      )}
     </>
-    }
-    {  userFound && 
-    <div className=" z-10 inset-0 overflow-y-auto">
-    <div className="flex justify-center min-h-screen  pt-4 pb-20 text-center sm:block sm:p-0">
-      <div
-        className=" inset-0 transition-opacity"
-        aria-hidden="true"
-      >  <div class="bg-red-200 rounded-lg p-4 shadow-md text-center">
-        <svg
-                 onClick={() => setUserFound(false)}
-                      className="h-10 w-10 text-blue-600"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M6 18L18 6M6 6l12 12"
-                      ></path>
-                    </svg>
-    <h3 class="text-lg font-medium mb-2">Student Not Found</h3>
-    <p>The  student you're looking  could not be found.</p>
-   </div>
-</div>   
-</div>
-  </div>}
-     {/* {isSearched&& <MainComponent serchedUser={serchedUser}/>} */}
-     <Modal isOpen={isModalOpen} onClose={handleCloseModal} username={username} password={password} setUsername={setUsername} handleLogin={handleLogin} setPassword={setPassword}/>
-     </>
   );
 };
 
-export default FindCertificate;
+export default Table;

@@ -5,12 +5,19 @@ import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import ConfirmationBox from "./successbox";
 import FailureBox from "./FailureBox"
+import StudentUpdateModal from './studentUpdateModal'
+import StudentDeleteModal from './StudentDeleteModal'
 const Table = ({ data }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const [certificateList,setCertificateList]=useState([])
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showFailBox, setShowFailBox] = useState(false);
+  const [isUpdate,setIsUpdate]=useState(false)
+  const [isDelete,setIsDelete]=useState(false)
+  const [regNo,setRegNo]=useState(null)
+  const [name,setName]=useState(null)
+  const [userId,setUserId]=useState(null)
   const [error, setError] = useState(null);
   const validationSchema = Yup.object().shape({
     registrationNo: Yup.string().required("Registration No is required"),
@@ -23,6 +30,7 @@ const Table = ({ data }) => {
     centerName: Yup.string().required("Center Name is required"),
     grade: Yup.string().required("Grade is required"),
   });
+  
   const initialValues = {
     registrationNo: "",
     studentName: "",
@@ -69,7 +77,7 @@ const Table = ({ data }) => {
     return () => {
      
     }
-  }, [])
+  }, [isUpdate,isDelete,isOpen])
   
   return (
     <>
@@ -87,7 +95,7 @@ const Table = ({ data }) => {
             onClick={() => setIsOpen(!isOpen)}
             className="bg-blue-500 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-5"
           >
-           Add Certificate
+           Add Student
           </button>
           {/* <button
             onClick={()=>{navigate('/add-certificate')}}
@@ -123,6 +131,7 @@ const Table = ({ data }) => {
               <th className="py-3 px-6 text-left">Issue Date</th>
               <th className="py-3 px-6 text-left">Center Name</th>
               <th className="py-3 px-6 text-left">Grade</th>
+              <th className="py-3 px-6 text-left">Action</th>
             </tr>
           </thead>
           <tbody className="text-gray-600 text-sm font-light">
@@ -140,6 +149,18 @@ const Table = ({ data }) => {
                 <td className="py-3 px-6 text-left">{item.issueDate}</td>
                 <td className="py-3 px-6 text-left">{item.centerName}</td>
                 <td className="py-3 px-6 text-left">{item.grade}</td>
+                <td className="py-3 px-6 text-left">
+                <div class="flex items-center space-x-2">
+                <div class="flex items-center space-x-2">
+          <button class="text-blue-500 hover:text-blue-700 focus:outline-none px-2 py-1 rounded" onClick={()=>{setIsUpdate(true);setRegNo(item.registrationNo);setName(item.studentName);setUserId(item._id)}} >
+            Update 
+          </button>
+          <button class="text-red-500 hover:text-red-700 focus:outline-none px-2 py-1 rounded"  onClick={()=>{setIsDelete(true);setRegNo(item.registrationNo);setName(item.studentName);setUserId(item._id)}}>
+            Delete
+          </button>
+        </div>
+        </div>
+      </td>
               </tr>
             ))}
           </tbody>
@@ -147,7 +168,7 @@ const Table = ({ data }) => {
       </div>
       {isOpen && (
         <div className="fixed z-10 inset-0 overflow-y-auto">
-          <div className="flex justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          <div className="flex justify-center min-h-screen  pt-4 pb-20 text-center sm:block sm:p-0">
             <div
               className="fixed inset-0 transition-opacity"
               aria-hidden="true"
@@ -168,8 +189,9 @@ const Table = ({ data }) => {
               aria-modal="true"
               aria-labelledby="modal-headline"
             >
-              <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
+              <div className="bg-white  py-4 pb-4 sm:p-6 sm:pb-4">
+                <div className=" bg-white px-4   ">
+                  
                   <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                     <svg
                     onClick={() => setIsOpen(!isOpen)}
@@ -187,8 +209,8 @@ const Table = ({ data }) => {
                       ></path>
                     </svg>
                   </div>
-                  <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full ml-5 ">
-                    <h3 className="text-lg leading-6 font-medium text-gray-600 bg-slate-100 p-5">
+                  <div className="mt-3 text-center sm:mt-0  sm:text-left w-full  ">
+                    <h3 className="text-lg leading-6 font-medium text-gray-600 bg-slate-100 p-5 mt-5">
                       Add a Certificate
                     </h3>
                     <div className="mt-2"></div>
@@ -198,8 +220,8 @@ const Table = ({ data }) => {
                       onSubmit={handleSubmit}
                     >
                       <Form>
-                        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 ">
-                          <div className="mb-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mt-5 ">
+                          <div >
                             <label
                               htmlFor="registrationNo"
                               className="block text-gray-700 font-bold mb-2"
@@ -220,7 +242,7 @@ const Table = ({ data }) => {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 ">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-5 ">
                           <div className="mb-4">
                             <label
                               htmlFor="studentName"
@@ -407,9 +429,11 @@ const Table = ({ data }) => {
           </div>
         </div>
       )}
+      {isDelete && <StudentDeleteModal isDelete={isDelete} setIsDelete={setIsDelete} regNo={regNo}name={name} userId={userId} showConfirmation={showConfirmation} setShowConfirmation={setShowConfirmation}/>}
+      {  isUpdate  && <StudentUpdateModal isUpdate={isUpdate} setIsUpdate={setIsUpdate} regNo={regNo}name={name} userId={userId} showConfirmation={showConfirmation} setShowConfirmation={setShowConfirmation}/>}
         {showConfirmation && (
         <ConfirmationBox
-          message="Certificate is added successfully"
+          message="The operation has been successfully completed   "
           duration={2000}
           showConfirmation={showConfirmation}
           setShowConfirmation={setShowConfirmation}
